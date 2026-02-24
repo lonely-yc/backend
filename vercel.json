@@ -1,3 +1,11 @@
 {
-  "rewrites": [{ "source": "/:path*", "destination": "/index.html" }]
+  "builds": [
+    {
+      "src": "web/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "rewrites": [
+    { "source": "/:path*", "destination": "/web/index.html" }
+  ]
 }
