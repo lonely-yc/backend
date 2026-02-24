@@ -1,0 +1,23 @@
+# Java
+target/
+*.class
+*.jar
+*.war
+*.log
+*.iml
+.idea/
+*.ipr
+*.iws
+.vscode/
+build/
+
+# Node (if using)
+node_modules/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Misc
+*.pdf
+nul

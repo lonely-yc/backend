@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 20mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "SimSun", "STSong", "宋体", serif;
+            font-size: 12pt;
+            line-height: 1.8;
+            color: #1a1a1a;
+        }
+
+        .page {
+            width: 297mm;
+            height: 210mm;
+            position: relative;
+            page-break-after: always;
+        }
+
+        /* 族谱封面样式 */
+        .cover {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            border: 3px solid #8b0000;
+            background: linear-gradient(to bottom, #fff9e6, #fff);
+        }
+
+        .cover-title {
+            font-size: 48pt;
+            color: #8b0000;
+            margin-bottom: 20px;
+            letter-spacing: 20px;
+        }
+
+        .cover-family {
+            font-size: 36pt;
+            color: #333;
+            margin-bottom: 40px;
+        }
+
+        .cover-info {
+            font-size: 14pt;
+            color: #666;
+            margin-top: 60px;
+        }
+
+        /* 族谱正文样式 */
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #8b0000;
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 24pt;
+            color: #8b0000;
+        }
+
+        .header .subtitle {
+            font-size: 12pt;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 欧式表格 - 五世一表 */
+        .ou-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .ou-table td {
+            border: 1px solid #333;
+            padding: 8px 12px;
+            text-align: center;
+            vertical-align: middle;
+            min-width: 80px;
+        }
+
+        .ou-table .header-cell {
+            background: #f5f5dc;
+            font-weight: bold;
+        }
+
+        .ou-table .generation-col {
+            background: #faf0e6;
+            width: 60px;
+            font-weight: bold;
+        }
+
+        .ou-table .name-cell {
+            font-size: 14pt;
+            font-weight: bold;
+        }
+
+        .ou-table .spouse-cell {
+            font-size: 11pt;
+            color: #666;
+        }
+
+        .ou-table .empty-cell {
+            background: #f9f9f9;
+        }
+
+        /* 世系线 */
+        .line-vertical {
+            border-left: 2px solid #333;
+            border-right: 2px solid #333;
+        }
+
+        .line-right {
+            border-right: 2px solid #333;
+        }
+
+        .line-left {
+            border-left: 2px solid #333;
+        }
+
+        .line-top {
+            border-top: 2px solid #333;
+        }
+
+        .line-bottom {
+            border-bottom: 2px solid #333;
+        }
+
+        /* 关系线 */
+        .connector {
+            position: relative;
+        }
+
+        .connector::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #333;
+        }
+
+        /* 脚注 */
+        .footer {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10pt;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 5px;
+        }
+
+        .footer .page-num {
+            float: right;
+        }
+
+        /* 吊线图样式 */
+        .tree-container {
+            margin-top: 15px;
+        }
+
+        .generation-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .gen-label {
+            width: 40px;
+            font-weight: bold;
+            color: #8b0000;
+        }
+
+        .gen-persons {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .person-box {
+            border: 1px solid #333;
+            padding: 8px 15px;
+            min-width: 100px;
+            text-align: center;
+            background: #fff;
+        }
+
+        .person-box.male {
+            background: linear-gradient(to bottom, #e6e6fa, #fff);
+        }
+
+        .person-box.female {
+            background: linear-gradient(to bottom, #ffe4e1, #fff);
+        }
+
+        .person-name {
+            font-size: 14pt;
+            font-weight: bold;
+        }
+
+        .person-spouse {
+            font-size: 10pt;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        /* 传统印章样式 */
+        .seal {
+            width: 80px;
+            height: 80px;
+            border: 3px solid #8b0000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8b0000;
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 30px auto;
+            opacity: 0.8;
+        }
+
+        /* 目录页 */
+        .toc {
+            padding: 40px;
+        }
+
+        .toc h2 {
+            font-size: 24pt;
+            color: #8b0000;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .toc-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .toc-item span:first-child {
+            font-size: 14pt;
+        }
+
+        /* 世系图 */
+        .pedigree-chart {
+            margin-top: 20px;
+        }
+
+        .chart-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .chart-person {
+            position: relative;
+            padding: 10px 20px;
+            border: 2px solid #333;
+            background: #fff;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .chart-person.male {
+            border-color: #4f46e5;
+        }
+
+        .chart-person.female {
+            border-color: #ec4899;
+        }
+
+        .chart-person .name {
+            font-size: 14pt;
+            font-weight: bold;
+        }
+
+        .chart-person .info {
+            font-size: 10pt;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .chart-connector {
+            width: 40px;
+            height: 2px;
+            background: #333;
+        }
+
+        .chart-vertical {
+            width: 2px;
+            height: 30px;
+            background: #333;
+        }
+
+        .connector-down {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 封面页 -->
+    <div class="page cover" th:if="${page == 1}">
+        <div class="cover-title" th:text="${family.surname + '族谱'}">张氏族谱</div>
+        <div class="cover-family" th:text="${family.description ?: '数字族谱'}">数字族谱</div>
+        <div class="seal">张氏</div>
+        <div class="cover-info">
+            <p th:text="'始修于 ' + ${#temporals.format(#temporals.createNow(), 'yyyy年')}">始修于 2024年</p>
+            <p style="margin-top: 10px;" th:text="'共 ' + ${stats.totalPersons + ' 位成员'}">共 128 位成员</p>
+        </div>
+    </div>
+
+    <!-- 目录页 -->
+    <div class="page" th:if="${page == 2}">
+        <div class="header">
+            <h1>目录</h1>
+        </div>
+        <div class="toc">
+            <div class="toc-item" th:each="entry, stat : ${toc}">
+                <span th:text="${stat.index + 1 + '. ' + entry.title}">1. 世系总图</span>
+                <span th:text="'第 ' + entry.page + ' 页'">第 1 页</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 世系总图 -->
+    <div class="page" th:each="gen : ${generations}">
+        <div class="header">
+            <h1 th:text="${family.surname + '氏世系图（第' + gen.generation + '世至第' + gen.endGeneration + '世）'}">张氏世系图（第1世至第5世）</h1>
+            <div class="subtitle" th:text="'共 ' + gen.personCount + ' 人'">共 12 人</div>
+        </div>
+
+        <div class="pedigree-chart">
+            <div class="chart-row" th:each="row : ${gen.rows}">
+                <div th:each="person : ${row}" class="chart-person"
+                     th:classappend="${person.gender == 'male' ? 'male' : 'female'}">
+                    <div class="name" th:text="${person.name}">张明</div>
+                    <div class="info" th:text="${person.spouse != null ? '配 ' + person.spouse : ''}">配 李氏</div>
+                    <div class="info" th:if="${person.birthPlace}" th:text="${person.birthPlace}">浙江杭州</div>
+                </div>
+                <div class="chart-connector" th:if="${!rowStat.last}"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span th:text="${family.surname + '族谱'}">张氏族谱</span>
+            <span class="page-num" th:text="'第 ' + gen.page + ' 页'">第 3 页</span>
+        </div>
+    </div>
+
+    <!-- 欧式世系表 -->
+    <div class="page" th:each="table : ${ouTables}">
+        <div class="header">
+            <h1 th:text="${family.surname + '氏欧式世系表（第' + table.startGen + '世至第' + table.endGen + '世）'}">张氏欧式世系表（第1世至第5世）</h1>
+            <div class="subtitle" th:text="'共计 ' + table.personCount + ' 人'">共计 12 人</div>
+        </div>
+
+        <table class="ou-table" th:each="rowData : ${table.rows}">
+            <tr th:each="row : ${rowData}">
+                <td th:each="cell : ${row}"
+                    th:classappend="${cell.className}"
+                    th:text="${cell.text ?: ''}"
+                    th:rowspan="${cell.rowspan ?: 1}"
+                    th:colspan="${cell.colspan ?: 1}"></td>
+            </tr>
+        </table>
+
+        <div class="footer">
+            <span th:text="${family.surname + '族谱 - 欧式世系表'}">张氏族谱 - 欧式世系表</span>
+            <span class="page-num" th:text="'第 ' + table.page + ' 页'">第 5 页</span>
+        </div>
+    </div>
+
+    <!-- 人物列表页 -->
+    <div class="page">
+        <div class="header">
+            <h1 th:text="${family.surname + '氏人物名录'}">张氏人物名录</h1>
+        </div>
+
+        <table class="ou-table">
+            <tr class="header-cell">
+                <td>序号</td>
+                <td>姓名</td>
+                <td>世代</td>
+                <td>性别</td>
+                <td>配偶</td>
+                <td>出生日期</td>
+                <td>籍贯</td>
+            </tr>
+            <tr th:each="person, stat : ${persons}">
+                <td th:text="${stat.index + 1}">1</td>
+                <td class="name-cell" th:text="${person.name}">张明</td>
+                <td th:text="'第' + person.generation + '世'">第1世</td>
+                <td th:text="${person.gender == 'male' ? '男' : '女'}">男</td>
+                <td class="spouse-cell" th:text="${person.spouseName ?: ''}">配 李氏</td>
+                <td th:text="${person.birthDate ?: ''}">1950-01-01</td>
+                <td th:text="${person.birthPlace ?: ''}">浙江杭州</td>
+            </tr>
+        </table>
+
+        <div class="footer">
+            <span th:text="${family.surname + '族谱 - 人物名录'}">张氏族谱 - 人物名录</span>
+            <span class="page-num">人物名录</span>
+        </div>
+    </div>
+
+    <!-- 迁徙路线图页 -->
+    <div class="page" th:if="${migrationData != null and !migrationData.empty}">
+        <div class="header">
+            <h1 th:text="${family.surname + '氏迁徙路线图'}">张氏迁徙路线图</h1>
+        </div>
+
+        <div class="tree-container">
+            <div class="generation-row" th:each="item : ${migrationData}">
+                <div class="gen-label" th:text="'第' + item.generation + '世'">第1世</div>
+                <div class="gen-persons">
+                    <div class="person-box" th:each="event : ${item.events}">
+                        <div class="person-name" th:text="${event.personName}">张明</div>
+                        <div class="person-spouse" th:text="${event.type + '：' + event.location}">迁徙：浙江杭州</div>
+                        <div class="person-spouse" th:text="${event.eventDate}">1950-01-01</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span th:text="${family.surname + '族谱 - 迁徙路线'}">张氏族谱 - 迁徙路线</span>
+            <span class="page-num">迁徙</span>
+        </div>
+    </div>
+</body>
+</html>
